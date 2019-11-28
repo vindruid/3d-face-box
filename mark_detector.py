@@ -26,38 +26,19 @@ class MarkDetector:
 
     def __init__(self, mark_model=current_model):
         """Initialization"""
-        # A face detector is required for mark detection.
-        self.marks = None
-
-        if mark_model.split(".")[1] == "pb":
-            # Get a TensorFlow session ready to do landmark detection
-            # Load a (frozen) Tensorflow model into memory.
-            self.cnn_input_size = 64
-            detection_graph = tf.Graph()
-            with detection_graph.as_default():
-                od_graph_def = tf.GraphDef()
-
-                with tf.gfile.GFile(mark_model, 'rb') as fid:
-                    serialized_graph = fid.read()
-                    od_graph_def.ParseFromString(serialized_graph)
-                    tf.import_graph_def(od_graph_def, name='')
-
-            self.graph = detection_graph
-            self.sess = tf.Session(graph=detection_graph, config=config)
-            
-        
-        else:
-            self.cnn_input_size = 64
-            # with CustomObjectScope({'tf': tf}):
-            with custom_object_scope({'smoothL1': smoothL1, 'relu6': relu6, 'DepthwiseConv2D': DepthwiseConv2D, 'mask_weights': mask_weights, 'tf': tf}):
-                self.sess = load_model(mark_model)
+        self.input_size = 64
+        # with CustomObjectScope({'tf': tf}):
+        with custom_object_scope({'smoothL1': smoothL1, 'relu6': relu6, 'DepthwiseConv2D': DepthwiseConv2D, 'mask_weights': mask_weights, 'tf': tf}):
+            self.sess = load_model(mark_model)
 
     def detect_marks(self, image ):
         """Detect marks from image"""
-        face_img_landmark = cv2.resize(image, (self.cnn_input_size, self.cnn_input_size))
+        print(self.input_size)
+        print(image.shape)
+        face_img_landmark = cv2.resize(image, (self.input_size, self.input_size))
         face_img_landmark = cv2.cvtColor(face_img_landmark, cv2.COLOR_BGR2GRAY)
 
-        face_img_landmark = face_img_landmark.reshape(1, self.cnn_input_size, self.cnn_input_size, 1)
+        face_img_landmark = face_img_landmark.reshape(1, self.input_size, self.input_size, 1)
         predictions = self.sess.predict_on_batch(face_img_landmark)
             
         # Convert predictions to landmarks.
