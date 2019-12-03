@@ -33,8 +33,6 @@ class MarkDetector:
 
     def detect_marks(self, image ):
         """Detect marks from image"""
-        print(self.input_size)
-        print(image.shape)
         face_img_landmark = cv2.resize(image, (self.input_size, self.input_size))
         face_img_landmark = cv2.cvtColor(face_img_landmark, cv2.COLOR_BGR2GRAY)
 
